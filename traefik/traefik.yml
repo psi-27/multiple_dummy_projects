@@ -1,0 +1,25 @@
+api:
+  insecure: false
+  dashboard: true
+  debug: true
+log:
+  level: debug
+providers:
+  docker:
+    exposedByDefault: false
+    watch: true
+  file:
+    filename: /etc/traefik/provider.yml
+    watch: true
+entryPoints:
+  web:
+    address: ":80"
+  webs:
+    address: ":443"
+certificatesResolvers:
+  acme_certification:
+    acme:
+      email: "multiproject@domain.tld"
+      storage: "/certs/acme.json"
+      tlsChallenge: {}
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"

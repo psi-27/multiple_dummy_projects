@@ -1,0 +1,19 @@
+php:
+  image: wodby/wordpress-php:$PHP_TAG
+  container_name: "${PROJECT_NAME}_php"
+  depends_on:
+    - mariadb
+    - redis
+  environment:
+    PHP_SENDMAIL_PATH: /usr/sbin/sendmail -t -i -S mailhog:1025
+    DB_HOST: $DB_HOST
+    DB_USER: $DB_USER
+    DB_PASSWORD: $DB_PASSWORD
+    DB_NAME: $DB_NAME
+    PHP_FPM_USER: 1000
+    PHP_FPM_GROUP: 1000
+    BASE_URL: $PROJECT_BASE_URL
+  volumes:
+    - ./wordpress:/var/www/html
+    - ./php/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
+    - ./php/GeoLiteCity.dat:/usr/share/GeoIP/GeoIPCity.dat

@@ -1,0 +1,3 @@
+redis:
+  image: wodby/redis:$REDIS_TAG
+  container_name: "${PROJECT_NAME}_redis"

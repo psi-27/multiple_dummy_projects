@@ -1,0 +1,52 @@
+#!/usr/bin/env sh
+
+recreate_compose() {
+  printf "version: \"2\"\n\nservices:\n" >./docker-compose.yml
+
+  for yml in $(find . -mindepth 2 -maxdepth 2 -name "docker-compose.*" | sort -n); do
+    sed -e 's/^/  /' $yml >>./docker-compose.yml
+    printf "\n" >>./docker-compose.yml
+  done
+
+  printf "\n\nnetworks:\n  default:\n" >>./docker-compose.yml
+}
+
+print_usage() {
+  printf "Usage:
+      (sh|bash) run task [project]
+
+      task  -   start   recompile docker-compose.override.yml and execute docker-compose up,
+                daemon  recompile docker-compose.override.yml and execute docker-compose up -d,
+                stop    execute docker-compose stop,
+                down    execute docker-compose down -v --remove orphans
+                db-dump execute mysqdump inside database container and save output into gz archive
+                usage   print this message
+
+      project - one of the subfolders name from projects folder, if specified run task script from project folder will be executed
+  "
+}
+
+docker_compose="docker-compose"
+
+case $1 in
+"start")
+  recreate_compose
+  $docker_compose up
+  ;;
+"daemon")
+  recreate_compose
+  $docker_compose up -d
+  ;;
+"stop")
+  $docker_compose stop
+  ;;
+"down")
+  $docker_compose down -v --remove-orphans
+  ;;
+"db-dump")
+  $docker_compose exec mariadb mysqldump -u${DB_USER} -p${DB_PASSWORD} -B ${DB_NAME} | gzip -c >./mariadb/init/latest.sql.gz
+  ;;
+*)
+  print_usage
+  ;;
+esac

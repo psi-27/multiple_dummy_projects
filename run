@@ -1,0 +1,82 @@
+#!/usr/bin/env sh
+
+recreate_compose() {
+  printf "version: \"2\"\n\nservices:\n  traefik:\n    networks:\n" >./docker-compose.override.yml
+
+  for project_folder in $(ls -1 projects); do
+    printf "      - $project_folder\n" >>./docker-compose.override.yml
+  done
+
+  printf "\nnetworks:\n" >>./docker-compose.override.yml
+
+  for project_folder in $(ls -1 projects); do
+    printf "  $project_folder:\n" >>./docker-compose.override.yml
+    printf "    external:\n" >>./docker-compose.override.yml
+    printf "      name: ${project_folder}_default\n" >>./docker-compose.override.yml
+    network_exists=$(docker network ls | grep $project_folder | awk '{print $1}')
+    [ -z "$network_exists" ] && docker network create ${project_folder}_default >/dev/null
+  done
+}
+
+print_usage() {
+  printf "Usage:
+      (sh|bash) run task [project]
+
+      task  -   start   recompile docker-compose.override.yml and execute docker-compose up,
+                daemon  recompile docker-compose.override.yml and execute docker-compose up -d,
+                stop    execute docker-compose stop,
+                down    execute docker-compose down -v --remove orphans
+                db-dump project name required, execute mysqdump inside database container and save output into gz archive
+                usage   print this message
+
+      project - one of the subfolders name from projects folder, if specified run task script from project folder will be executed
+  "
+}
+
+docker_compose="docker-compose"
+project_folder="."
+[ -n "$2" ] && [ -d projects/$2 ] && project_folder="projects/$2"
+
+case $1 in
+"start")
+  if [ "$project_folder" != "." ]; then
+    wd=$(pwd) && cd $project_folder && sh run start || cd $wd || exit
+  else
+    recreate_compose
+    $docker_compose up
+  fi
+  ;;
+"daemon")
+  if [ "$project_folder" != "." ]; then
+    wd=$(pwd) && cd $project_folder && sh run daemon || cd $wd || exit
+  else
+    recreate_compose
+    $docker_compose up -d
+  fi
+  ;;
+"stop")
+  if [ "$project_folder" != "." ]; then
+    wd=$(pwd) && cd $project_folder && sh run stop || cd $wd || exit
+  else
+    $docker_compose stop
+  fi
+  ;;
+"down")
+  if [ "$project_folder" != "." ]; then
+    wd=$(pwd) && cd $project_folder && sh run down || cd $wd || exit
+  else
+    $docker_compose down -v --remove-orphans
+  fi
+  ;;
+"db-dump")
+  if [ "$project_folder" != "." ]; then
+    wd=$(pwd) && cd $project_folder && sh run db-dump || cd $wd || exit
+  else
+    print_usage
+  fi
+  ;;
+*)
+  print_usage
+  ;;
+
+esac

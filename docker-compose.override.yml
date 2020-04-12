@@ -1,0 +1,15 @@
+version: "2"
+
+services:
+  traefik:
+    networks:
+      - joomla
+      - wordpress
+
+networks:
+  joomla:
+    external:
+      name: joomla_default
+  wordpress:
+    external:
+      name: wordpress_default

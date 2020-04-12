@@ -1,0 +1,23 @@
+nginx:
+  image: wodby/nginx:$NGINX_TAG
+  container_name: "${PROJECT_NAME}_nginx"
+  depends_on:
+    - php
+  environment:
+    NGINX_STATIC_OPEN_FILE_CACHE: "off"
+    NGINX_ERROR_LOG_LEVEL: debug
+    NGINX_BACKEND_HOST: php
+    NGINX_VHOST_PRESET: wordpress
+  volumes:
+    - ./wordpress:/var/www/html
+    - ./nginx/0-project.conf:/etc/nginx/conf.d/0-project.conf
+    - ./nginx/z-wordpress.conf:/etc/nginx/z-wordpress.conf
+  labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.${PROJECT_NAME}_nginx.entrypoints=web"
+    - "traefik.http.routers.${PROJECT_NAME}_nginx.rule=Host(`${PROJECT_BASE_URL}`)"
+    - "traefik.http.routers.${PROJECT_NAME}_nginx.middlewares=https_redirect@file"
+    - "traefik.http.routers.${PROJECT_NAME}_nginx_secure.entrypoints=webs"
+    - "traefik.http.routers.${PROJECT_NAME}_nginx_secure.rule=Host(`${PROJECT_BASE_URL}`)"
+    - "traefik.http.routers.${PROJECT_NAME}_nginx_secure.tls=true"
+    - "traefik.http.routers.${PROJECT_NAME}_nginx_secure.tls.certresolver=acme_certification"

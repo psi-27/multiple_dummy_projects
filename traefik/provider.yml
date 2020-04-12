@@ -1,0 +1,32 @@
+http:
+  middlewares:
+    https_redirect:
+      redirectScheme:
+        scheme: https
+        port: 443
+        permanent: true
+    basic_auth:
+      basicAuth:
+        users:
+          - "user:$2y$05$GHT0Ob5/Wh0ws8lcF/C4Re43ZsW73KeeyMjq6rA1S/z10hyTEat4m"
+    authorized:
+      chain:
+        middlewares:
+          - basic_auth
+          - https_redirect
+    authorized_secured:
+      chain:
+        middlewares:
+          - basic_auth
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_RSA_WITH_AES_256_GCM_SHA384
+  certificates:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: "/certs/fullchain.pem"
+        keyFile: "/certs/privkey.pem"

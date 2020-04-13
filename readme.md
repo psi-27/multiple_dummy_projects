@@ -22,3 +22,5 @@ Usage make target \[project=project_name\]
     target: down - runs down task. make down [project=project_name]. project_name - one of the subfolders name from projects folder.
     target: db-dump - runs db-dump task. make db-dump project=project_name. project_name - one of the subfolders name from projects folder.
     target: help - print this help
+
+Traefik basic auth admin:admin

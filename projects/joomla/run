@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+source ./.env
+
 recreate_compose() {
   printf "version: \"2\"\n\nservices:\n" >./docker-compose.yml
 
